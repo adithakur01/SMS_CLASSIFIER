@@ -1,0 +1,41 @@
+import pandas as pd
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+
+# Load the dataset
+df = pd.read_csv(r"E:\SMS_Classifier\cleaned_dataset.csv")
+
+# Preprocess 'sms' column to handle potential NaN values
+df['sms'] = df['sms'].fillna('').astype(str)
+
+# Tokenization
+df['tokens'] = df['sms'].apply(word_tokenize)
+
+# Remove stopwords
+stop_words = set(stopwords.words('english'))
+df['filtered_tokens'] = df['tokens'].apply(lambda x: [word for word in x if word.lower() not in stop_words])
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(df['filtered_tokens'], df['label'], test_size=0.2, random_state=42)
+
+# Replace NaN values in labels with a default label (you can choose '0' or '1')
+default_label = 0
+y_train = y_train.fillna(default_label)
+
+# Convert text data to numerical features using TF-IDF
+tfidf_vectorizer = TfidfVectorizer()
+X_train_tfidf = tfidf_vectorizer.fit_transform([" ".join(tokens) for tokens in X_train])
+X_test_tfidf = tfidf_vectorizer.transform([" ".join(tokens) for tokens in X_test])
+
+# Train a classifier (e.g., Naive Bayes)
+classifier = MultinomialNB()
+classifier.fit(X_train_tfidf, y_train)
+
+# Function to classify SMS
+def classify_sms(sms_text):
+    sms_vectorized = tfidf_vectorizer.transform([sms_text])
+    prediction = classifier.predict(sms_vectorized)
+    return prediction[0]  # Return the predicted label (0 or 1)
