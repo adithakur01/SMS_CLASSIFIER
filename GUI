@@ -1,0 +1,40 @@
+import tkinter as tk
+from tkinter import Label, Text, Button, messagebox, font  # Import font for styling
+from Model_and_Functions import classify_sms
+
+# GUI setup
+def classify_sms_gui():
+    sms_text = sms_entry.get("1.0", tk.END).strip()
+
+    if not sms_text:
+        messagebox.showwarning("Empty SMS", "Please enter an SMS.")
+        return
+
+    result = classify_sms(sms_text)
+
+    if result is None:
+        messagebox.showwarning("Invalid SMS", "Invalid SMS. Please enter a valid one.")
+        return
+
+    predicted_label = 'Not Spam' if result == 0 else 'Spam'
+    result_label.config(text=f"Predicted Label: {predicted_label}")
+
+root = tk.Tk()
+root.title("SMS Classifier")
+
+# Styling
+bold_font = font.Font(family="Helvetica", size=16, weight="bold")
+
+sms_label = Label(root, text="Enter SMS/Email:", font=bold_font)
+sms_label.pack(pady=10)
+
+sms_entry = Text(root, width=20, height=10, font=bold_font)
+sms_entry.pack(pady=10)
+
+classify_button = Button(root, text="Classify SMS", command=classify_sms_gui, font=bold_font)
+classify_button.pack(pady=10)
+
+result_label = Label(root, text="Predicted Label: ", font=bold_font)
+result_label.pack(pady=10)
+
+root.mainloop()
